@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModelProvider;
 
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.rakibofc.imageplaceholder.databinding.ActivityMainBinding;
@@ -43,7 +44,7 @@ public class MainActivity extends AppCompatActivity {
 
         viewModel.getImage().observe(this, binding.imageView::setImageBitmap);
 
-        binding.imageView.setImageBitmap(viewModel.getBitmapFromMemCache(CACHE_IMAGE_KEY));
+        binding.imageView.setImageBitmap(viewModel.getBitmapFromMemCache());
 
         binding.btnFetchImage.setOnClickListener(v -> {
 
@@ -67,7 +68,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-
-        Toast.makeText(this, "The app has been killed.", Toast.LENGTH_SHORT).show();
+        Log.e("Info", "App killed!");
     }
 }

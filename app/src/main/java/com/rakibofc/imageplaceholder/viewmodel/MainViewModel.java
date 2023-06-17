@@ -3,8 +3,12 @@ package com.rakibofc.imageplaceholder.viewmodel;
 import static com.rakibofc.imageplaceholder.ui.MainActivity.CACHE_IMAGE_KEY;
 
 import android.app.Application;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.preference.PreferenceManager;
+import android.util.Base64;
 import android.util.Log;
 import android.util.LruCache;
 
@@ -13,36 +17,22 @@ import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URL;
 
 public class MainViewModel extends AndroidViewModel {
 
-    MutableLiveData<Bitmap> liveImage;
+    public MutableLiveData<Bitmap> liveImage;
+    public SharedPreferences sharedPreferences;
     private LruCache<String, Bitmap> memoryCache;
 
     public MainViewModel(@NonNull Application application) {
         super(application);
 
         liveImage = new MutableLiveData<>();
-        // loadData();
-        initCacheImage();
-    }
-
-    private void initCacheImage() {
-
-        final int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
-
-        final int cacheSize = maxMemory / 8;
-
-        memoryCache = new LruCache<String, Bitmap>(cacheSize) {
-            @Override
-            protected int sizeOf(String key, Bitmap bitmap) {
-
-                // The cache size will be measured in kilobytes rather than number of items.
-                return bitmap.getByteCount() / 1024;
-            }
-        };
+        sharedPreferences = getApplication().getSharedPreferences("MyPrefs", Context.MODE_PRIVATE);
+        loadData();
     }
 
     public LiveData<Bitmap> getImage() {
@@ -67,7 +57,7 @@ public class MainViewModel extends AndroidViewModel {
                 liveImage.postValue(bitmap);
 
                 // Add the image in cache
-                addBitmapToMemoryCache(CACHE_IMAGE_KEY, bitmap);
+                addBitmapToMemoryCache(bitmap);
 
             } catch (IOException e) {
                 e.printStackTrace();
@@ -75,13 +65,25 @@ public class MainViewModel extends AndroidViewModel {
         }).start();
     }
 
-    public void addBitmapToMemoryCache(String key, Bitmap bitmap) {
-        if (getBitmapFromMemCache(key) == null) {
-            memoryCache.put(key, bitmap);
-        }
+    public void addBitmapToMemoryCache(Bitmap bitmap) {
+
+
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
+
+        byte[] byteArray = byteArrayOutputStream.toByteArray();
+        String encodedImage = Base64.encodeToString(byteArray, Base64.DEFAULT);
+
+
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString(CACHE_IMAGE_KEY, encodedImage).apply();
     }
 
-    public Bitmap getBitmapFromMemCache(String key) {
-        return memoryCache.get(key);
+    public Bitmap getBitmapFromMemCache() {
+
+        String encodedImage = sharedPreferences.getString(CACHE_IMAGE_KEY, "");
+        byte[] decodedString = Base64.decode(encodedImage, Base64.DEFAULT);
+
+        return BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
     }
 }
