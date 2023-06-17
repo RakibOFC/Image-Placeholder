@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Image Placeholder</string>
+    <string name="message">Click the button to generate a random placeholder image.</string>
+    <string name="fetch_image">Fetch Image</string>
+</resources>
