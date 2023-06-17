@@ -6,7 +6,6 @@ import androidx.lifecycle.ViewModelProvider;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.rakibofc.imageplaceholder.databinding.ActivityMainBinding;
 import com.rakibofc.imageplaceholder.receiver.ConnectionReceiver;
@@ -42,8 +41,7 @@ public class MainActivity extends AppCompatActivity {
         // Get and set image from ViewModel
         viewModel.getImage().observe(this, binding.imageView::setImageBitmap);
 
-        viewModel.getImage().observe(this, binding.imageView::setImageBitmap);
-
+        // Load the image from SharedPreferences
         binding.imageView.setImageBitmap(viewModel.getBitmapFromMemCache());
 
         binding.btnFetchImage.setOnClickListener(v -> {

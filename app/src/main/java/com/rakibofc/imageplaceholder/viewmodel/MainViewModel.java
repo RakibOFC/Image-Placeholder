@@ -7,10 +7,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.preference.PreferenceManager;
 import android.util.Base64;
-import android.util.Log;
-import android.util.LruCache;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
@@ -25,14 +22,14 @@ public class MainViewModel extends AndroidViewModel {
 
     public MutableLiveData<Bitmap> liveImage;
     public SharedPreferences sharedPreferences;
-    private LruCache<String, Bitmap> memoryCache;
 
     public MainViewModel(@NonNull Application application) {
         super(application);
 
+        // Initialize liveImage and sharedPreferences
         liveImage = new MutableLiveData<>();
         sharedPreferences = getApplication().getSharedPreferences("MyPrefs", Context.MODE_PRIVATE);
-        loadData();
+        // loadData();
     }
 
     public LiveData<Bitmap> getImage() {
@@ -67,23 +64,32 @@ public class MainViewModel extends AndroidViewModel {
 
     public void addBitmapToMemoryCache(Bitmap bitmap) {
 
-
+        // Convert the Bitmap to a byte array and compress it as PNG format
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
 
+        // Get the byte array from the ByteArrayOutputStream
         byte[] byteArray = byteArrayOutputStream.toByteArray();
+
+        // Encode the byte array as a Base64 string
         String encodedImage = Base64.encodeToString(byteArray, Base64.DEFAULT);
 
-
+        // Get the SharedPreferences editor to make changes
         SharedPreferences.Editor editor = sharedPreferences.edit();
+
+        // Store the Base64-encoded image string in SharedPreferences
         editor.putString(CACHE_IMAGE_KEY, encodedImage).apply();
     }
 
     public Bitmap getBitmapFromMemCache() {
 
+        // Retrieve the Base64-encoded image string from SharedPreferences
         String encodedImage = sharedPreferences.getString(CACHE_IMAGE_KEY, "");
+
+        // Decode the Base64 string back into a byte array
         byte[] decodedString = Base64.decode(encodedImage, Base64.DEFAULT);
 
+        // Convert the byte array into a Bitmap object and return bitmap image
         return BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
     }
 }
